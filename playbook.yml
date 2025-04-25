@@ -1,0 +1,87 @@
+---
+- name: Security Audit, Update, Upgrade and Scan for Ports 
+  hosts: all
+  become: yes 
+
+#Task1
+  tasks:
+    - name: Disable SSH key
+      lineinfile: 
+        dest: /etc/ssh/sshd_config
+        regexp: ^PasswordAuthentication
+        line: PasswordAuthentication no
+      notify:
+        restart ssh 
+
+  handlers:
+    - name: restart ssh
+      service:
+        name: ssh
+        state: restarted
+
+#Task2
+    - name: Ensure firewall enabled for CentOS
+      service:
+        name: firewallid
+        state: started
+        enabled: true
+
+    - name: Allow ports 22, 80, and 443
+      firewalld:
+        port: "{{ port }}"
+        proto: "tcp"
+        state: "enabled"
+      loop:
+        - port:22
+        - port 80
+        - port:443
+
+#Task3
+    - name:
+      yum:
+        upgrade: yes
+        update_cache: yes
+        state: latest
+
+#Task4    
+   # - name: Vault all passwords from plain text
+   #   notsecret: myvalue
+   #   mysecret: !vault |
+   #              $ANSIBLE_VAULT;1.1;AES256
+   #              66386439653236336462626566653063336164663966303231363934653561363964363833313662
+   #              6431626536303530376336343832656537303632313433360a626438346336353331386135323734
+   #              62656361653630373231613662633962316233633936396165386439616533353965373339616234
+   #              3430613539666330390a313736323265656432366236633330313963326365653937323833366536
+   #              34623731376664623134383463316265643436343438623266623965636363326136
+   #   other_plain_text: othervalue 
+
+#Task#5
+    - name: Audit Suspicious Permissions
+      file:
+        path: /var/log/{{ item }}
+        owner: syslog
+        group: adm
+        mode: "0640"
+      loop:
+        - messages
+        - syslog
+        - auth.log
+
+#  - name: Ensure consistent file permissions
+#     file:
+#       path: /etc/config/app.conf
+#       owner: appuser
+#       group: appgroup
+#       mode: "0644"
+
+#Task6
+    - name: Gather facts on all ports and override which command to use
+      community.general.listen_ports_facts:
+        command: 'netstat'     
+        include_non_listening: true
+
+#Task6
+#    - name: Scan for Open Ports 
+#      plugin: community.general.nmap
+#      strict: false
+#      address: 192.168.0.0/24
