@@ -1,47 +1,102 @@
 ---
-- name: Security Audit, Update, Upgrade and Scan for Ports 
+- name: Security for the servers 
   hosts: all
   become: yes 
+#vars_files:
+#- secrets.yml
 
 #Task1
   tasks:
-    - name: Disable SSH key
-      lineinfile: 
-        dest: /etc/ssh/sshd_config
-        regexp: ^PasswordAuthentication
-        line: PasswordAuthentication no
-      notify:
-        restart ssh 
+    - name: Ping the machines
+      ping:
 
-  handlers:
-    - name: restart ssh
-      service:
-        name: ssh
-        state: restarted
+    - name: Ensure SSH key-based authentication is enabled
+      lineinfile: 
+        path: /etc/ssh/sshd_config  
+        regexp: PubkeyAuthentication 
+        line: PubkeyAuthentication 
+        state: present
+      notify:
+        Restart SSH 
+#is dest: ok instead of path:
+# check my regep: 
+# check my line: 
+
+    - name: Ensure no password login
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: PasswordAuthentication'  #check
+        line: PasswordAuthentication no #check
+        state: present
+      notify: 
+        Restart SSH
+#same as above for dest:, regexp:, line:
 
 #Task2
     - name: Ensure firewall enabled for CentOS
       service:
         name: firewallid
         state: started
-        enabled: true
+        enabled: true 
+      when: ansible_facts['distribution'] == CentOS
 
-    - name: Allow ports 22, 80, and 443
+    - name: Install python-3 firewall for firewalld module 
+      package:
+        name: python3-firewall
+        state: present
+
+    - name: Install Firewalld on CentOS
+      package:
+        name: firewalld
+        state: present
+      when: ansible_facts['os_family'] == 'RedHat'
+
+    - name: Allow ports 22, 80, and 443 on RedHat
       firewalld:
-        port: "{{ port }}"
+        port: "{{ port }}"  
         proto: "tcp"
-        state: "enabled"
+        state: enabled
       loop:
         - port:22
         - port 80
         - port:443
+      when: ansible_facts['os_family'] == 'RedHat'
+#service: https?
+
+###for Ubuntu
+#    - name: Ensure firewall enable for Ubuntu # ok...missing Ubuntu controller (Proj1)
+#      service: 
+#        name: UFW
+#        enabled: true
+#
+#     - name: Allow ports 22, 80, and 443 on Ubuntu
+#       ufw:
+#       port: "{{ port }}"  #can you replace with service: https here
+#       proto: "tcp"
+#       state: enabled
+#     loop:
+#       - port:22
+#       - port 80
+#       - port:443
+#     when: ansible_facts['os_family'] == 'Debian'
 
 #Task3
-    - name:
-      yum:
-        upgrade: yes
-        update_cache: yes
+    - name: Update and Upgrade packages on CentOS
+      yum:   
+        upgrade: yes  
+        update_cache: 
         state: latest
+      when: ansible_facts['os_family'] == 'Redhat'
+#is dnf preferred over yum
+# is #name: "*" preferred way
+# when: ansible_facts['os_family'] == 'RedHat'?
+
+###for Ubuntu
+#   - name: Update and Upgrade packages on Ubuntu
+#     apt: 
+#       upgrade: yes
+#       update_cache: yes
+#       state: latest
 
 #Task4    
    # - name: Vault all passwords from plain text
@@ -61,27 +116,53 @@
         path: /var/log/{{ item }}
         owner: syslog
         group: adm
-        mode: "0640"
+        mode: "0000"  # thought #0604 disabled permissions
       loop:
         - messages
         - syslog
         - auth.log
+#when here?
 
+#other option?"
 #  - name: Ensure consistent file permissions
 #     file:
 #       path: /etc/config/app.conf
 #       owner: appuser
 #       group: appgroup
-#       mode: "0644"
+#       mode: "0000"
 
 #Task6
-    - name: Gather facts on all ports and override which command to use
+    - name: (6) Install Netstat on RHEL
+      yum:
+        name: net-tools
+        state: present
+      when: ansible_facts['os_family'] == 'RedHat'
+#dnf?
+
+###for Ubuntu
+#   - name: (6) Install Netstat on Debian
+#     apt:
+#       name: net-tools
+#       state: present
+#     when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Gather Facts on All Ports 
       community.general.listen_ports_facts:
-        command: 'netstat'     
-        include_non_listening: true
+        command: 'netstat'
+        include_non_listening: true 
 
-#Task6
-#    - name: Scan for Open Ports 
-#      plugin: community.general.nmap
-#      strict: false
-#      address: 192.168.0.0/24
+# - name: (6) Open Port Scanning
+#     command: netstat -tulpn | column -t
+#    register: netstat_output
+#yours
+
+    - name: Debug Open Ports
+      debug:
+        msg: "{{ netstat_output.stdout }}"
+
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restart
