@@ -25,8 +25,8 @@
     - name: Ensure no password login
       lineinfile:
         path: /etc/ssh/sshd_config
-        regexp: PasswordAuthentication'  #check
-        line: PasswordAuthentication no #check
+        regexp: PasswordAuthentication
+        line: PasswordAuthentication no 
         state: present
       notify: 
         Restart SSH
@@ -99,16 +99,16 @@
 #       state: latest
 
 #Task4    
-   # - name: Vault all passwords from plain text
-   #   notsecret: myvalue
-   #   mysecret: !vault |
-   #              $ANSIBLE_VAULT;1.1;AES256
-   #              66386439653236336462626566653063336164663966303231363934653561363964363833313662
-   #              6431626536303530376336343832656537303632313433360a626438346336353331386135323734
-   #              62656361653630373231613662633962316233633936396165386439616533353965373339616234
-   #              3430613539666330390a313736323265656432366236633330313963326365653937323833366536
-   #              34623731376664623134383463316265643436343438623266623965636363326136
-   #   other_plain_text: othervalue 
+# - name: Vault all passwords from plain text
+#   notsecret: myvalue
+#   mysecret: !vault |
+#              $ANSIBLE_VAULT;1.1;AES256
+#              66386439653236336462626566653063336164663966303231363934653561363964363833313662
+#              6431626536303530376336343832656537303632313433360a626438346336353331386135323734
+#              62656361653630373231613662633962316233633936396165386439616533353965373339616234
+#              3430613539666330390a313736323265656432366236633330313963326365653937323833366536
+#              34623731376664623134383463316265643436343438623266623965636363326136
+#   other_plain_text: othervalue 
 
 #Task#5
     - name: Audit Suspicious Permissions
