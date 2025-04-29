@@ -44,7 +44,8 @@
     - name: Allow ports 22, 80, and 443 on RedHat
       firewalld:
         port: "{{ port }}"  
-        proto: "tcp"        state: enabled
+        proto: "tcp"        
+        state: enabled
       loop:
         - port:22
         - port 80
@@ -56,16 +57,16 @@
         name: UFW
         enabled: true 
  
-     - name: Allow ports 22, 80, and 443 on Ubuntu
-       ufw:
-         port: "{{ port }}"  #can you replace with service: https here
-         proto: "tcp"
-         state: enabled
-       loop:
+    - name: Allow ports 22, 80, and 443 on Ubuntu
+      ufw:
+        port: "{{ port }}"  
+        proto: "tcp"
+        state: enabled
+      loop:
          - port:22
          - port 80
          - port:443
-       when: ansible_facts['os_family'] == 'Debian'
+      when: ansible_facts['os_family'] == 'Debian'
 
 #Task3
     - name: Update and Upgrade packages on CentOS
