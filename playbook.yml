@@ -4,12 +4,11 @@
   become: yes 
   vars_files:
     - secrets.yml
-
-#Task1
   tasks:
     - name: Ping the machines
       ping:
-
+      
+#Task1
     - name: Ensure SSH key-based authentication is enabled
       lineinfile: 
         path: /etc/ssh/sshd_config  
