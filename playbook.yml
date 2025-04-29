@@ -33,7 +33,7 @@
       service:
         name: firewallid
         state: started
-        enabled: true
+        enabled: true 
       when: ansible_facts['distribution'] == CentOS
 
     - name: Install python-3 firewall for firewalld module 
@@ -44,30 +44,28 @@
     - name: Allow ports 22, 80, and 443 on RedHat
       firewalld:
         port: "{{ port }}"  
-        proto: "tcp"
-        state: enabled
+        proto: "tcp"        state: enabled
       loop:
         - port:22
         - port 80
         - port:443
       when: ansible_facts['os_family'] == 'RedHat'
-      
-###for Ubuntu
-#    - name: Ensure firewall enable for Ubuntu/Debian
-#      service: 
-#        name: UFW
-#        enabled: true
-#
-#     - name: Allow ports 22, 80, and 443 on Ubuntu
-#       ufw:
-#       port: "{{ port }}"  #can you replace with service: https here
-#       proto: "tcp"
-#       state: enabled
-#     loop:
-#       - port:22
-#       - port 80
-#       - port:443
-#     when: ansible_facts['os_family'] == 'Debian'
+        
+    - name: Ensure firewall enable for Ubuntu/Debian
+      service: 
+        name: UFW
+        enabled: true 
+ 
+     - name: Allow ports 22, 80, and 443 on Ubuntu
+       ufw:
+         port: "{{ port }}"  #can you replace with service: https here
+         proto: "tcp"
+         state: enabled
+       loop:
+         - port:22
+         - port 80
+         - port:443
+       when: ansible_facts['os_family'] == 'Debian'
 
 #Task3
     - name: Update and Upgrade packages on CentOS
@@ -77,12 +75,11 @@
         state: latest
       when: ansible_facts['os_family'] == 'Redhat'
 
-###for Ubuntu
-#   - name: Update and Upgrade packages on Ubuntu
-#     apt: 
-#       upgrade: yes
-#       update_cache: yes
-#       state: latest
+    - name: Update and Upgrade packages on Ubuntu
+      apt: 
+        upgrade: yes 
+        update_cache: yes 
+        state: latest
 
 #Task#5
     - name: Audit Suspicious Permissions
@@ -96,14 +93,6 @@
         - syslog
         - auth.log
 
-#other option?"
-#  - name: Ensure consistent file permissions
-#     file:
-#       path: /etc/config/app.conf
-#       owner: appuser
-#       group: appgroup
-#       mode: "0000"
-
 #Task6
     - name: Install Netstat on RHEL
       dnf:
@@ -111,27 +100,20 @@
         state: present
       when: ansible_facts['os_family'] == 'RedHat'
 
-###for Ubuntu
-#   - name: Install Netstat on Debian
-#     apt:
-#       name: net-tools
-#       state: present
-#     when: ansible_facts['os_family'] == 'Debian'
+    - name: Install Netstat on Debian
+      apt:
+        name: net-tools
+        state: present
+      when: ansible_facts['os_family'] == 'Debian'
 
     - name: Gather Facts on All Ports 
       community.general.listen_ports_facts:
         command: 'netstat'
-        include_non_listening: true
-
-#   - name: (6) Open Port Scanning
-#       command: netstat -tulpn | column -t
-#       register: netstat_output
-#yours
+        include_non_listening: true 
 
     - name: Debug Open Ports
       debug:
         msg: "{{ netstat_output.stdout }}"
-
 
   handlers:
     - name: Restart SSH
