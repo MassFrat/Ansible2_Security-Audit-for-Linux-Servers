@@ -70,10 +70,11 @@
       yum:
         name: '*'
         state: latest
-   - name: Update and upgrade packages on Ubuntu
+        
+    - name: Update and upgrade packages on Ubuntu
       when: ansible_os_family == "Debian"
       apt:
-        update_cache: yes
+        update_cache: yes 
         upgrade: dist
 
 #Task6
