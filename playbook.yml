@@ -1,97 +1,80 @@
----
-- name: Security for the servers 
+--
+- name: Security for the servers
   hosts: all
   become: yes 
   vars_files:
     - secrets.yml
+
   tasks:
     - name: Ping the machines
       ping:
-      
+
 #Task1
+  tasks:
+    - name: Ping the machines
+      ping:
+
     - name: Ensure SSH key-based authentication is enabled
-      lineinfile: 
-        path: /etc/ssh/sshd_config  
-        regexp: '^#?PubkeyAuthentication' 
-        line: 'PubkeyAuthentication yes' 
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PubkeyAuthentication'
+        line: 'PubkeyAuthentication yes'
         state: present
       notify:
-        Restart SSH 
-
+        Restart SSH
+        
     - name: Ensure no password login
       lineinfile:
         path: /etc/ssh/sshd_config
-        regexp: '^#?PasswordAuthentication'  
-        line: 'PasswordAuthentication no' 
+        regexp: '^#?PasswordAuthentication'
+        line: 'PasswordAuthentication no'
         state: present
-      notify: 
+      notify:
         Restart SSH
 
 #Task2
-    - name: Ensure firewall enabled for CentOS
-      service:
-        name: firewallid
-        state: started
-        enabled: true 
-      when: ansible_facts['distribution'] == CentOS
+    - name: Ensure Firewall enabled for CentOS
+      package:
+        name: firewalld
+        state: present
+      when: ansible_facts['os_family'] == 'RedHat'
 
-    - name: Install python-3 firewall for firewalld module 
+    - name: Allow access on ports 22, 80, 443 on CentOS
+      firewalld:
+        service: https
+        state: enabled
+        permanent: true 
+        immediate: true 
+        offline: true 
+      when: ansible_facts['os_family'] == 'RedHat'
+    
+    - name: Ensure firewall enable for Ubuntu
+      ufw:
+        rule: allow
+        port: '{{ item }}'
+        proto: tcp
+      loop:
+        - 22
+        - 80
+        - 443
+      when: ansible_facts['os_family'] == 'Debian'
+
+    - name: Install python3 firewall for firewalld module
       package:
         name: python3-firewall
         state: present
 
-    - name: Allow ports 22, 80, and 443 on RedHat
-      firewalld:
-        port: "{{ port }}"  
-        proto: "tcp"        
-        state: enabled
-      loop:
-        - port:22
-        - port 80
-        - port:443
-      when: ansible_facts['os_family'] == 'RedHat'
-        
-    - name: Ensure firewall enable for Ubuntu/Debian
-      service: 
-        name: UFW
-        enabled: true 
- 
-    - name: Allow ports 22, 80, and 443 on Ubuntu
-      ufw:
-        port: "{{ port }}"  
-        proto: "tcp"
-        state: enabled
-      loop:
-         - port:22
-         - port 80
-         - port:443
-      when: ansible_facts['os_family'] == 'Debian'
-
 #Task3
-    - name: Update and Upgrade packages on CentOS
-      dnf:   
-        upgrade: yes  
-        update_cache: 
+    - name: Update and upgrade packages on CentOS
+      when: ansible_os_family == "RedHat"
+      yum:
+        name: '*'
         state: latest
-      when: ansible_facts['os_family'] == 'Redhat'
-
-    - name: Update and Upgrade packages on Ubuntu
-      apt: 
-        upgrade: yes 
-        update_cache: yes 
-        state: latest
-
-#Task#5
-    - name: Audit Suspicious Permissions
-      file:
-        path: /var/log/{{ item }}
-        owner: syslog
-        group: adm
-        mode: "0000"
-      loop:
-        - messages
-        - syslog
-        - auth.log
+   - name: Update and upgrade packages on Ubuntu
+      when: ansible_os_family == "Debian"
+      apt:
+        update_cache: yes
+        upgrade: dist
 
 #Task6
     - name: Install Netstat on RHEL
@@ -106,16 +89,11 @@
         state: present
       when: ansible_facts['os_family'] == 'Debian'
 
-    - name: Gather Facts on All Ports 
+    - name: Gather Facts on All Ports
       community.general.listen_ports_facts:
         command: 'netstat'
-        include_non_listening: true 
-
-    - name: Debug Open Ports
-      debug:
-        msg: "{{ netstat_output.stdout }}"
-
-  handlers:
+        include_non_listening: true
+handlers:
     - name: Restart SSH
       service:
         name: ssh
