@@ -94,6 +94,7 @@
       community.general.listen_ports_facts:
         command: 'netstat'
         include_non_listening: true
+
 handlers:
     - name: Restart SSH
       service:
