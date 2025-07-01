@@ -1,6 +1,10 @@
 # Securing Linux Servers: SSH Configuration and Port Management
+
+<br/>
+
 This guide provides step-by-step instructions for securing Linux servers by configuring SSH access and implementing firewall rules to allow only essential ports (22, 80, and 443).
 
+<br/>
 
 ## Overview:
 Server security is critical for protecting your infrastructure from unauthorized access and attacks. This guide covers:
@@ -10,11 +14,16 @@ Firewall configuration using iptables and ufw
 Port management for web services
 Best practices for ongoing security
 
+<br/>
+
 ## Prerequisites:
 
 Root or sudo access to the Linux server
 Basic understanding of Linux command line
 SSH client for remote access
+
+<br/>
+
 
 ## Port Configuration Strategy:
 ## Allowed Ports:
@@ -22,6 +31,8 @@ SSH client for remote access
 Port 22: SSH (Secure Shell) - For remote server administration
 Port 80: HTTP - For web traffic (unencrypted)
 Port 443: HTTPS - For secure web traffic (encrypted)
+
+<br/>
 
 ## Troubleshooting
 ## Common Issues:
@@ -35,6 +46,8 @@ Firewall blocking legitimate traffic: Review and adjust rules as needed
 Keep console access available (physical or virtual console)
 Have alternative access methods configured
 Document recovery procedures
+
+<br/>
 
 ## Security Best Practices:
 
