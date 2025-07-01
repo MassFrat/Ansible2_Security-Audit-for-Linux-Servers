@@ -1,6 +1,7 @@
 # Securing Linux Servers: SSH Configuration and Port Management
 This guide provides step-by-step instructions for securing Linux servers by configuring SSH access and implementing firewall rules to allow only essential ports (22, 80, and 443).
 
+
 ## Overview:
 Server security is critical for protecting your infrastructure from unauthorized access and attacks. This guide covers:
 
